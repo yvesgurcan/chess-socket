@@ -20,12 +20,16 @@ The host is responsible for sending the whole game state to the data store to sa
 
 When a client loads a game, they send a message to other clients via websocket to notify them that they are now online:
 
+```json
   { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", connected: "98b029e0-00aa-4ab0-8efd-6560f784ce5c", "gameVersion": "0.2.3" }
+```
 
 Or that they are now offline:
 
+```json
   { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", disconnected: "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
-  
+```
+
 It is up to the clients to keep track of which other clients are online. Based on this information, clients decide whether saving the game should be left to the host or if a guest can save the game.
 
 ## Spectators and AI-only games
