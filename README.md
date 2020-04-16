@@ -46,7 +46,7 @@ When a setting for a player is changed from "AI" to "Human", the payload looks l
  { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "human": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
 ```
 
-Conversely, the message would look like this to set a player from "AI" to "Human":
+Conversely, the message would look like this to set a player from "Human" to "AI":
 
 ```json
  { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "ai": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
