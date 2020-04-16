@@ -38,6 +38,24 @@ On top of their host or guest role, clients can also be spectators. Guests who a
 
 Typically, having a spectating host makes the most sense for a game where AIs play against each other and guests are also spectating.
 
+A client becomes a spectator when the game settings for that client are switched from "Human" to "AI" (or if all player slots are already filled when they connect to the game).
+
+When a setting for a player is changed from "AI" to "Human", the payload looks like this:
+
+```json
+ { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "human": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
+```
+
+Conversely, the message would look like this to set a player from "AI" to "Human":
+
+```json
+ { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "ai": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
+```
+
 ## Client version
 
 Players who run different client versions is an edge case since the code to run the client is hosted on a web server. It is still a possible problem since the code is executed locally by the player's machine. This issue could arise if the client codebase was updated and only one of the players reloaded the page. The other player would still be using the old version of the client, which could cause issues when patching the game state. Therefore, it is important that a client sends the version of the code (aka `gameVersion`) that they are executing to the other clients when they are connected (see example payload above).
+
+## Unhandled payloads
+
+Payloads with data that can not be handled by the client (because the properties are unknown or the data is invalid) are logged client-side.
