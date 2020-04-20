@@ -1,20 +1,11 @@
-'use strict';
+const WebSocket = require('ws');
 
-const express = require('express');
-const socketIO = require('socket.io');
+const ws = new WebSocket.Server({ port: '3000' });
 
-const PORT = process.env.PORT || 3000;
-const INDEX = '/index.html';
-
-const server = express()
-  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
-  .listen(PORT, () => console.log(`Listening on ${PORT}`));
-
-const io = socketIO(server);
-
-io.on('connection', (socket) => {
-  console.log('Client connected');
-  socket.on('disconnect', () => console.log('Client disconnected'));
+ws.on('open', function open() {
+    ws.send('something');
 });
 
-setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
+ws.on('message', function incoming(data) {
+    console.log(data);
+});
