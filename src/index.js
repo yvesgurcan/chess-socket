@@ -1,12 +1,17 @@
 const WebSocket = require('ws');
 const { Server: WebSocketServer } = WebSocket;
 const { v4: uuid } = require('uuid');
-const { WEBSOCKET_EVENT_SELECT, WEBSOCKET_EVENT_JOIN } = require('./constants');
+const {
+    WEBSOCKET_EVENT_SELECT,
+    WEBSOCKET_EVENT_JOIN,
+    WEBSOCKET_EVENT_DISCONNECTED
+} = require('./constants');
 
 module.exports = class GameSocketServer {
     constructor({ server }) {
         this.server = new WebSocketServer({ server });
         this.server.on('connection', this.handleNewConnection);
+        this.server.on('close', event => console.log('closed', event));
     }
 
     static parse(payload) {
@@ -29,8 +34,10 @@ module.exports = class GameSocketServer {
 
     handleNewConnection = client => {
         client.id = uuid();
+        client.userId = null;
         client.games = [];
         client.on('message', payload => this.handleNewMessage(payload, client));
+        client.on('close', code => this.handleClientClose(code, client));
     };
 
     handleNewMessage = (payload, client) => {
@@ -50,6 +57,10 @@ module.exports = class GameSocketServer {
     };
 
     handleJoinGame(payload, client) {
+        if (!client.userId) {
+            client.userId = payload.playerId;
+        }
+
         let game = null;
         this.server.clients.forEach(cl => {
             const gameIndex = this.findGameIndexInClient(payload, cl);
@@ -77,10 +88,24 @@ module.exports = class GameSocketServer {
         this.broadcast({ event: WEBSOCKET_EVENT_JOIN, ...game });
     }
 
+    handleClientClose(code, client) {
+        client.games.forEach(game => {
+            this.broadcast({
+                event: WEBSOCKET_EVENT_DISCONNECTED,
+                playerId: client.userId,
+                gameId: game.gameId
+            });
+        });
+    }
+
     findGameIndexInClient(payload, client) {
         return client.games
             .map(game => game.gameId)
             .findIndex(game => game.gameId === payload.gameId);
+    }
+
+    findGameInClient(payload, client) {
+        return client.games.map(game => game.gameId).includes(payload.gameId);
     }
 
     createNewGameObject(payload) {
@@ -115,9 +140,7 @@ module.exports = class GameSocketServer {
         let to = [];
         const responsePayload = GameSocketServer.stringify(payload);
         this.server.clients.forEach(client => {
-            if (
-                !client.games.map(game => game.gameId).includes(payload.gameId)
-            ) {
+            if (!this.findGameInClient(payload, client)) {
                 return;
             }
 
