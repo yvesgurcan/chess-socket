@@ -1,11 +1,10 @@
-const WebSocket = require('ws');
+const { Server: WebSocketServer } = require('ws');
 const { v4: uuid } = require('uuid');
 const { WEBSOCKET_EVENT_SELECT, WEBSOCKET_EVENT_JOIN } = require('./constants');
 
 module.exports = class GameSocketServer {
-    constructor({ port }) {
-        this.port = port;
-        this.server = new WebSocket.Server({ port });
+    constructor({ server }) {
+        this.server = new WebSocketServer({ server });
         this.server.on('connection', this.handleNewConnection);
     }
 
