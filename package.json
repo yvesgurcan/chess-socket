@@ -1,6 +1,6 @@
 {
-    "name": "websockets-socket.io",
-    "version": "0.0.2",
+    "name": "chess-socket",
+    "version": "0.0.3",
     "engines": {
         "node": "12.x"
     },
@@ -8,7 +8,8 @@
     "main": "index.js",
     "scripts": {
         "start": "node .",
-        "start:dev": "nodemon ."
+        "start:dev": "nodemon .",
+        "log": "heroku logs --app chess-socket"
     },
     "keywords": [],
     "author": "",

@@ -1,5 +1,7 @@
 A websocket server to exchange chess game data between players.
 
+Note that the server still necessitates an HTTP server in order to function correctly in production.
+
 ## Payloads
 
 The JSON payload transmitted by the websocket is as lightweight as possible. Instead of passing the whole game data or even the diff between the old and new data, it is up to the client to execute the logic that will update the view from the event provided by the websocket server. As a consequence, it is crucial that clients run the same version of the application (see below).
@@ -21,13 +23,20 @@ The host is responsible for sending the whole game state to the data store to sa
 When a client loads a game, they send a message to other clients via websocket to notify them that they are now online:
 
 ```json
-  { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "connected": "98b029e0-00aa-4ab0-8efd-6560f784ce5c", "gameVersion": "0.2.3" }
+{
+    "join": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json",
+    "playerId": "98b029e0-00aa-4ab0-8efd-6560f784ce5c",
+    "gameVersion": "0.2.3"
+}
 ```
 
 Or that they are now offline:
 
 ```json
-  { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "disconnected": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
+{
+    "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json",
+    "disconnected": "98b029e0-00aa-4ab0-8efd-6560f784ce5c"
+}
 ```
 
 It is up to the clients to keep track of which other clients are online. Based on this information, clients decide whether saving the game should be left to the host or if a guest can save the game.
@@ -43,13 +52,19 @@ A client becomes a spectator when the game settings for that client are switched
 When a setting for a player is changed from "AI" to "Human", the payload looks like this:
 
 ```json
- { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "human": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
+{
+    "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json",
+    "human": "98b029e0-00aa-4ab0-8efd-6560f784ce5c"
+}
 ```
 
 Conversely, the message would look like this to set a player from "Human" to "AI":
 
 ```json
- { "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json", "ai": "98b029e0-00aa-4ab0-8efd-6560f784ce5c" }
+{
+    "gameId": "b09bf1c1-daaf-4753-a4eb-391bfb569ace.json",
+    "ai": "98b029e0-00aa-4ab0-8efd-6560f784ce5c"
+}
 ```
 
 ## Client version
