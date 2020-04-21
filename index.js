@@ -1,2 +1,2 @@
 const GameSocketServer = require('./src');
-new GameSocketServer({ port: 3000 });
+new GameSocketServer({ port: 80 });
