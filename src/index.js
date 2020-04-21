@@ -1,4 +1,5 @@
-const WebSocket, { Server: WebSocketServer } = require('ws');
+const WebSocket = require('ws');
+const { Server: WebSocketServer } = WebSocket;
 const { v4: uuid } = require('uuid');
 const { WEBSOCKET_EVENT_SELECT, WEBSOCKET_EVENT_JOIN } = require('./constants');
 
