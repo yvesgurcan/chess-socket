@@ -7,13 +7,14 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "node server.js",
-        "start:dev": "nodemon server.js"
+        "start": "node .",
+        "start:dev": "nodemon ."
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "uuid": "^7.0.3",
         "ws": "^7.2.3"
     }
 }
