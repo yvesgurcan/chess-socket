@@ -65,7 +65,12 @@ module.exports = class GameSocketServer {
         this.server.clients.forEach(cl => {
             const gameIndex = this.findGameIndexInClient(payload, cl);
             if (gameIndex !== -1) {
-                if (!cl.games[gameIndex].player2) {
+                if (!cl.games[gameIndex].player1) {
+                    game = this.addPlayer1ToGameObject(
+                        payload,
+                        cl.games[gameIndex]
+                    );
+                } else if (!cl.games[gameIndex].player2) {
                     game = this.addPlayer2ToGameObject(
                         payload,
                         cl.games[gameIndex]
@@ -90,6 +95,35 @@ module.exports = class GameSocketServer {
 
     handleClientClose(code, client) {
         client.games.forEach(game => {
+            this.server.clients.forEach(cl => {
+                const gameIndex = this.findGameIndexInClient(game, client);
+                if (gameIndex !== 1) {
+                    let game = client.games[gameIndex];
+                    if (game.player2 === client.userId) {
+                        game = {
+                            ...game,
+                            player2: null
+                        };
+                    }
+
+                    if (game.player1 === client.userId) {
+                        game = {
+                            ...game,
+                            player1: null
+                        };
+                    }
+
+                    if (game.spectators.includes(client.userId)) {
+                        game = {
+                            ...game,
+                            spectators: game.spectators.filter(
+                                spectatorId => spectatorId !== client.userId
+                            )
+                        };
+                    }
+                    cl.games[gameIndex] = game;
+                }
+            });
             this.broadcast({
                 event: WEBSOCKET_EVENT_DISCONNECTED,
                 playerId: client.userId,
@@ -100,8 +134,10 @@ module.exports = class GameSocketServer {
 
     findGameIndexInClient(payload, client) {
         return client.games
-            .map(game => game.gameId)
-            .findIndex(game => game.gameId === payload.gameId);
+            .filter(game => game.gameId)
+            .findIndex(game => {
+                return game.gameId === payload.join || payload.gameId;
+            });
     }
 
     findGameInClient(payload, client) {
@@ -114,6 +150,13 @@ module.exports = class GameSocketServer {
             player1: payload.playerId,
             player2: null,
             spectators: []
+        };
+    }
+
+    addPlayer1ToGameObject(payload, game) {
+        return {
+            ...game,
+            player1: payload.playerId
         };
     }
 
@@ -154,5 +197,6 @@ module.exports = class GameSocketServer {
             }
         });
         console.log({ output: payload, to });
+        console.log('----------');
     }
 };
