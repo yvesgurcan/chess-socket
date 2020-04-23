@@ -2,9 +2,10 @@ const WebSocket = require('ws');
 const { Server: WebSocketServer } = WebSocket;
 const { v4: uuid } = require('uuid');
 const {
-    WEBSOCKET_EVENT_SELECT,
     WEBSOCKET_EVENT_JOIN,
-    WEBSOCKET_EVENT_DISCONNECTED
+    WEBSOCKET_EVENT_DISCONNECTED,
+    WEBSOCKET_EVENT_SELECT,
+    WEBSOCKET_EVENT_SET_OPTION
 } = require('./constants');
 
 module.exports = class GameSocketServer {
@@ -43,16 +44,35 @@ module.exports = class GameSocketServer {
     handleNewMessage = (payload, client) => {
         const parsedPayload = GameSocketServer.parse(payload);
         console.log({ input: parsedPayload, from: client.id });
-        if (parsedPayload.join) {
-            this.handleJoinGame(parsedPayload, client);
-        } else if (parsedPayload.gameId) {
-            this.broadcast(
-                {
-                    event: WEBSOCKET_EVENT_SELECT,
-                    ...parsedPayload
-                },
-                client.id
-            );
+        switch (parsedPayload.event) {
+            default: {
+                console.error('Unhandled payload.', { payload });
+                return;
+            }
+            case WEBSOCKET_EVENT_JOIN: {
+                this.handleJoinGame(parsedPayload, client);
+                return;
+            }
+            case WEBSOCKET_EVENT_SELECT: {
+                this.broadcast(
+                    {
+                        event: WEBSOCKET_EVENT_SELECT,
+                        ...parsedPayload
+                    },
+                    client.id
+                );
+                return;
+            }
+            case WEBSOCKET_EVENT_SET_OPTION: {
+                this.broadcast(
+                    {
+                        event: WEBSOCKET_EVENT_SET_OPTION,
+                        ...parsedPayload
+                    },
+                    client.id
+                );
+                return;
+            }
         }
     };
 
@@ -136,7 +156,7 @@ module.exports = class GameSocketServer {
         return client.games
             .filter(game => game.gameId)
             .findIndex(game => {
-                return game.gameId === payload.join || payload.gameId;
+                return game.gameId === payload.gameId;
             });
     }
 
@@ -146,7 +166,7 @@ module.exports = class GameSocketServer {
 
     createNewGameObject(payload) {
         return {
-            gameId: payload.join,
+            gameId: payload.gameId,
             player1: payload.playerId,
             player2: null,
             spectators: []
